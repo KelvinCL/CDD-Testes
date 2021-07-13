@@ -1,0 +1,109 @@
+---
+title: "Exploração do clima em João Pessoa, Campina Grande e Patos - PB"
+output: 
+  html_document:
+    code_folding: hide
+---
+João Pessoa, Campina Grande e Patos são 3 cidades brasileiras, localizadas no estado da Paraíba.Nessa análise, as utilizaremos como referências para nos ajudar a compreender o clima paraibano. A primeira cidade, a capital do estado, localiza-se no litoral; a segunda está localizada nas proximidades do topo da Serra da Borborema, e a terceira na região do Sertão. O resultado desta análise será disponibilizada em um relatório em RMarkdown e publicado online.
+
+Como ponto de partida, queremos obter as seguintes informações: 
+1 - Como o calor variou nos meses de janeiro e fevereiro (pico do verão), nas 3 cidades, nos últimos anos?
+
+2 - Como podemos descrever a temperatura, no período junino, das 3 cidades, nos últimos anos?
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+```
+Antes de tudo, apresentaremos uma visão geral dos dados que compõem a base utilizada:
+```{r}
+# SEMPRE read_csv NUNCA read.csv
+clima_tudo = read_csv(
+    here("data/tempo-jp-cg-pt.csv"),
+    col_types = cols(
+        .default = col_double(),
+        cidade = col_character(),
+        semana = col_date(format = ""),
+        ano = col_integer(),
+        mes = col_integer()
+    )
+)
+  
+
+clima_tudo %>% 
+ slice(1:8)
+
+
+```
+Para que possamos responder à primeira questão, utilizaremos os dados de temperatura_media. A seleção dos dados considerará as cidades, os meses, as semanas e a temperatura média (do dia, em graus Celsius) e os filtros aplicados considerarão os meses de janeiro e fevereiro para as 3 cidades.
+
+Abaixo, podemos observar os dados do mês de janeiro:
+```{r}
+  
+tempMediaJaneiro = filter(select(clima_tudo, cidade, mes, semana, temp_media), mes == 1) %>% 
+  ggplot(mapping = aes(y = temp_media, x = semana)) +
+  facet_wrap(~ cidade, ncol = 1) +
+  geom_jitter(height = .1, alpha = .6, color = "red")+
+  labs(
+    x = "semana",
+    y = "temp_media"
+  )
+
+tempMediaJaneiro
+
+```
+**Podemos observar que Campina Grande é a cidade que possui as menores temperaturas dentre as 3, geralmente, na faixa de valores de (~23.5, 27.5) graus Celsius; João Pessoa, por sua vez, apresenta, geralmente, valores entre (27.5, 30.0) graus, com um conjunto mais homogêneo (menos variância); Já Patos, como era de se esperar, apresenta as temperaturas médias mais elevadas e também mais heterogêneas (considerando o intervalo de valores). Em geral, suas temperaturas estão distribuídas acima dos 27.5 graus, podendo chegar a valores próximos - abaixo ou acima - de 32.5 graus, o que representa uma temperatura média elevadíssima, considerando que esses valores também podem ter sido influenciados por temperaturas mínimas.
+
+Se observarmos o período entre 2019 e 2021 (até então), podemos observar que a temperatura de Campina Grande apresentou uma alta em relação aos demais anos, com a presença de dados mais próximos de 27.5 graus; no mesmo cenário, João Pessoa se manteve mais ou menos no mesmo intervalo, sem grandes variações; já com relação a Patos, é mais difícil de chegar a uma conclusão, devido à heterogeneidade dos seus valores.**
+
+
+Prosseguindo com a análise, abaixo podemos observar os dados do mês de fevereiro:
+```{r}
+  
+tempMediaFevereiro = filter(select(clima_tudo, cidade, mes, semana, temp_media), mes == 2) %>% 
+  ggplot(mapping = aes(y = temp_media, x = semana)) +
+  facet_wrap(~ cidade, ncol = 1) +
+  geom_jitter(height = .1, alpha = .6, color = "red")+
+  labs(
+    x = "semana",
+    y = "temp_media"
+  )
+
+tempMediaFevereiro
+
+```
+
+**Podemos observar que Campina Grande permanece sendo a cidade que possui as menores temperaturas médias dentre as 3. Com temperaturas médias compreendidas em um intervalo de valores semelhante ao apresentado em Janeiro; João Pessoa segue tendo os dados mais heterogêneos e na mesma faixa de valores; Patos, diferente das demais, apresenta uma queda mais acentuada na temperatura média, com mais valores entre 27.5 e 30.0 e menos valores na faixa de 30.0 a 32.5 graus Celsius.
+
+Para o cenários de 2019 até os dias atuais, tanto Campina Grande quanto João Pessoa não apresentaram mudanças bruscas de temperatura, no mês de fevereiro. Já Patos, aparenta ter tido uma leve queda de temperatura, se comparada com anos anteriores.**
+
+Para respondermos à segunda questão, usaremos o código abaixo, semelhante ao utilizado na primeira questão, porém filtrado pelo mês de Junho.
+```{r}
+  
+tempPeriodoJunino = filter(select(clima_tudo, cidade, mes, semana, temp_media), mes == 6) %>% 
+  ggplot(mapping = aes(y = temp_media, x = semana)) +
+  facet_wrap(~ cidade, ncol = 1) +
+  geom_jitter(height = .1, alpha = .6, color = "red")+
+  labs(
+    x = "semana",
+    y = "temp_media"
+  )
+
+tempPeriodoJunino
+
+```
+**Podemos observar que, assim como na análise da pergunta anterior, Campina Grande apresenta os menores valores de temperatura média e não apresenta uma variação brusca, com valores compreendidos, geralmente, no intervalo entre 22 e 25 graus Celsius, possuindo uma temperatura mais moderada; João Pessoa apresentou uma queda em 2020 e 2021, embora normalmente apresente temperatura entre média e elevada; e Patos se manteve mais ou menos na média, com sua temperatura mais próxima de elevada. 
+
+```{r warning=FALSE, message=FALSE}
+library(ggplot2)
+
+# Transformar vetor para data.frame
+dados2 <- data.frame(y = tempPeriodoJunino)
+
+# Criar histograma
+h1 <- ggplot(dados2, aes(y)) + geom_histogram() +
+  xlab("Semana") + ylab("Temperatura Média")
+h1
+```
+
